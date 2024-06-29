@@ -1,0 +1,26 @@
+server:
+  port: 12000
+spring:
+  application:
+    name: "gateway_server"
+  cloud:
+    gateway:
+      routes:
+       - id: consumerServer
+         uri: lb://consumer-server
+         predicates: #断言
+           - Path=/cart/getCartById/**
+       - id: providerServer
+         uri: lb://provider-server
+         predicates:
+           - Path=/user/getUserById/**
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    instance-id: "${spring.cloud.client.ip-address}:${server.port}"
+    lease-renewal-interval-in-seconds: 5
+    lease-expiration-duration-in-seconds: 15
+  client:
+    service-url:
+      defaultZone: "http://eurekaServer18000:18000/eureka/,http://eurekaServer18001:18001/eureka/"

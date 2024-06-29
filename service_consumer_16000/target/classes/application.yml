@@ -1,0 +1,64 @@
+server:
+  port: 16000
+spring:
+  application:
+    name: "consumer-server"
+  cloud:
+    loadbalancer:
+      cache:
+        enabled: true
+eureka:
+  instance:
+    prefer-ip-address: true
+    instance-id: "${spring.cloud.client.ip-address}:${server.port}"
+    lease-renewal-interval-in-seconds: 5
+    lease-expiration-duration-in-seconds: 15
+  client:
+    service-url:
+      defaultZone: "http://eurekaServer18000:18000/eureka/,http://eurekaServer18001:18001/eureka/"
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        failure-rate-threshold: 30
+        sliding-window-type: time_based
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        automatic-transition-from-open-to-half-open-enabled: true
+        wait-duration-in-open-state: 5s
+        permitted-number-of-calls-in-half-open-state: 3
+    instances:
+      backendA:
+        base-config: default
+      backendB:
+        base-config: default
+        failure-rate-threshold: 50
+        slow-call-rate-threshold: 30
+        slow-call-duration-threshold: 2s
+
+
+  bulkhead:
+    configs:
+      default:
+        max-concurrent-calls: 10
+        max-wait-duration: 20
+    instances:
+      bulkheadC:
+        base-config: default
+
+  ratelimiter:
+    configs:
+      default:
+        limit-refresh-period: 2s
+        limit-for-period: 5
+    instances:
+      backendD:
+        base-config: default
+      timeout1:
+        timeout-duration: 2s
+
+
+
+
+
